@@ -1,0 +1,7 @@
+# Environment Variables for Local Development
+# Copy this file to .env.local and fill in your actual values
+
+NEXT_PUBLIC_INSFORGE_URL=your-insforge-project-url
+NEXT_PUBLIC_INSFORGE_ANON_KEY=your-insforge-anon-key
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your-razorpay-key-id
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
