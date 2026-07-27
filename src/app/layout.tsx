@@ -17,8 +17,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Pinkie Swear | Luxury Custom Press-On Nails",
-  description: "Luxury custom press-on nails, handmade just for you. Create your dream nail set with personalized custom orders or shop from our gallery of previous creations.",
+  title: "The PinkieSwear",
+  description: "Luxury Handmade Press-on Nails",
   keywords: ["press-on nails", "custom nails", "handmade nails", "luxury nails", "nail art", "custom press-ons", "nail designs"],
   authors: [{ name: "The Pinkie Swear" }],
   creator: "The Pinkie Swear",
@@ -28,19 +28,44 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://thepinkieswear.com'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://thepinkieswear.com'),
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://thepinkieswear.com',
-    title: 'The Pinkie Swear | Luxury Custom Press-On Nails',
-    description: 'Luxury custom press-on nails, handmade just for you. Create your dream nail set with personalized custom orders.',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thepinkieswear.com',
+    title: 'The PinkieSwear',
+    description: 'Luxury Handmade Press-on Nails',
     siteName: 'The Pinkie Swear',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'The Pinkie Swear - Luxury Handmade Press-on Nails',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The Pinkie Swear | Luxury Custom Press-On Nails',
-    description: 'Luxury custom press-on nails, handmade just for you.',
+    title: 'The PinkieSwear',
+    description: 'Luxury Handmade Press-on Nails',
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any', type: 'image/x-icon' },
+      { url: '/icon.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icon.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'The Pinkie Swear',
   },
   robots: {
     index: true,
@@ -61,6 +86,10 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#1a1a1a' },
+  ],
 };
 
 export default function RootLayout({

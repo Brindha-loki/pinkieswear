@@ -28,6 +28,7 @@ type CartContextType = {
   cartSubtotal: number;
   cartTotal: number;
   deliveryCharge: number;
+  otherCharge: number;
   cartCount: number;
 };
 
@@ -99,7 +100,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const cartSubtotal = cart.reduce((total, item) => total + item.price, 0);
   const hasItems = cart.length > 0;
   const deliveryCharge = hasItems ? DELIVERY_CHARGE : 0;
-  const cartTotal = cartSubtotal + deliveryCharge;
+  const otherCharge = 0;
+  const cartTotal = cartSubtotal + deliveryCharge + otherCharge;
   const cartCount = cart.length;
 
   return (
@@ -111,6 +113,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       cartSubtotal,
       cartTotal,
       deliveryCharge,
+      otherCharge,
       cartCount,
     }}>
       {children}

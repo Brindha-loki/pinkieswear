@@ -6,29 +6,22 @@ interface SizingUploadProps {
   onNailPhotoUpload: (image: string) => void;
   onShapeSelect: (shape: string) => void;
   onNotesSubmit: (notes: string) => void;
-  onThreeDArtSelection?: (selection: string) => void;
   initialNailPhoto?: string;
   initialShape?: string;
   initialNotes?: string;
-  initialThreeDArt?: string;
-  showThreeDArtSection?: boolean;
 }
 
 const SizingUpload: React.FC<SizingUploadProps> = ({
   onNailPhotoUpload,
   onShapeSelect,
   onNotesSubmit,
-  onThreeDArtSelection,
   initialNailPhoto,
   initialShape,
   initialNotes,
-  initialThreeDArt,
-  showThreeDArtSection = false,
 }) => {
   const [uploadedNailPhoto, setUploadedNailPhoto] = useState<string | undefined>(initialNailPhoto);
   const [selectedShape, setSelectedShape] = useState<string | undefined>(initialShape);
   const [additionalNotes, setAdditionalNotes] = useState(initialNotes || '');
-  const [selectedThreeDArt, setSelectedThreeDArt] = useState<string | undefined>(initialThreeDArt);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -42,10 +35,6 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
   useEffect(() => {
     setAdditionalNotes(initialNotes || '');
   }, [initialNotes]);
-
-  useEffect(() => {
-    setSelectedThreeDArt(initialThreeDArt);
-  }, [initialThreeDArt]);
 
   const nailShapes = [
     'Long Oval',
@@ -75,13 +64,6 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
   const handleShapeClick = (shape: string) => {
     setSelectedShape(shape);
     onShapeSelect(shape);
-  };
-
-  const handleThreeDArtClick = (selection: string) => {
-    setSelectedThreeDArt(selection);
-    if (onThreeDArtSelection) {
-      onThreeDArtSelection(selection);
-    }
   };
 
   const handleNotesChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -193,102 +175,6 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
           </div>
         </div>
       </div>
-
-      {/* 3D Art Selection - Only for Custom Orders */}
-      {showThreeDArtSection && (
-        <div className="glass-card-strong rounded-3xl p-6 relative overflow-hidden">
-          {/* Decorative background */}
-          <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-blush-pink/10 animate-float"></div>
-          <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-rose-gold/10 animate-float" style={{ animationDelay: '1.5s' }}></div>
-
-          <div className="relative z-10">
-            <h3 className="font-serif text-xl font-semibold text-foreground mb-4 text-center">
-              3D Art Options
-            </h3>
-            <p className="text-foreground/70 text-center mb-6 text-sm">
-              Would you like to include 3D art elements?
-            </p>
-
-            {/* 3D Art Options Grid */}
-            <div className="space-y-3">
-              <button
-                onClick={() => handleThreeDArtClick('3d-art')}
-                className={`
-                  w-full p-4 rounded-xl border-2 transition-all duration-300 text-left
-                  ${selectedThreeDArt === '3d-art'
-                    ? 'border-rose-gold bg-rose-gold/10 shadow-lg shadow-rose-gold/30'
-                    : 'border-rose-gold/20 bg-white/30 hover:border-rose-gold/50 hover:bg-white/50'
-                  }
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">Yes, it includes 3D Art</p>
-                    <p className="text-sm text-foreground/70">Raised 3D elements and dimensional art</p>
-                  </div>
-                  {selectedThreeDArt === '3d-art' && (
-                    <div className="w-5 h-5 bg-rose-gold rounded-full flex items-center justify-center flex-shrink-0 ml-4">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleThreeDArtClick('beads-charms')}
-                className={`
-                  w-full p-4 rounded-xl border-2 transition-all duration-300 text-left
-                  ${selectedThreeDArt === 'beads-charms'
-                    ? 'border-rose-gold bg-rose-gold/10 shadow-lg shadow-rose-gold/30'
-                    : 'border-rose-gold/20 bg-white/30 hover:border-rose-gold/50 hover:bg-white/50'
-                  }
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">No, but it includes beads or charms</p>
-                    <p className="text-sm text-foreground/70">Decorative beads and charm additions</p>
-                  </div>
-                  {selectedThreeDArt === 'beads-charms' && (
-                    <div className="w-5 h-5 bg-rose-gold rounded-full flex items-center justify-center flex-shrink-0 ml-4">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </button>
-
-              <button
-                onClick={() => handleThreeDArtClick('no-3d')}
-                className={`
-                  w-full p-4 rounded-xl border-2 transition-all duration-300 text-left
-                  ${selectedThreeDArt === 'no-3d'
-                    ? 'border-rose-gold bg-rose-gold/10 shadow-lg shadow-rose-gold/30'
-                    : 'border-rose-gold/20 bg-white/30 hover:border-rose-gold/50 hover:bg-white/50'
-                  }
-                `}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-foreground">None of the above</p>
-                    <p className="text-sm text-foreground/70">Flat design without 3D elements or decorations</p>
-                  </div>
-                  {selectedThreeDArt === 'no-3d' && (
-                    <div className="w-5 h-5 bg-rose-gold rounded-full flex items-center justify-center flex-shrink-0 ml-4">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                  )}
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Additional Notes */}
       <div className="glass-card-strong rounded-3xl p-6 relative overflow-hidden">

@@ -1,12 +1,15 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import insforge from '@/lib/insforge';
 
 interface InspirationUploadProps {
   onImageUpload: (image: string) => void;
   onDesignNotesChange?: (notes: string) => void;
+  onThreeDArtSelection?: (selection: string) => void;
   initialImage?: string;
   initialNotes?: string;
+  initialThreeDArt?: string;
   readOnly?: boolean;
   galleryItem?: {
     name: string;
@@ -14,16 +17,28 @@ interface InspirationUploadProps {
   };
 }
 
+interface ThreeDArtOption {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  is_active: boolean;
+}
+
 const InspirationUpload: React.FC<InspirationUploadProps> = ({
   onImageUpload,
   onDesignNotesChange,
+  onThreeDArtSelection,
   initialImage,
   initialNotes = '',
+  initialThreeDArt,
   readOnly = false,
   galleryItem,
 }) => {
   const [uploadedImage, setUploadedImage] = useState<string | undefined>(initialImage);
   const [designNotes, setDesignNotes] = useState(initialNotes);
+  const [selectedThreeDArt, setSelectedThreeDArt] = useState<string | undefined>(initialThreeDArt);
+  const [threeDArtOptions, setThreeDArtOptions] = useState<ThreeDArtOption[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -33,6 +48,42 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
   useEffect(() => {
     setDesignNotes(initialNotes);
   }, [initialNotes]);
+
+  useEffect(() => {
+    setSelectedThreeDArt(initialThreeDArt);
+  }, [initialThreeDArt]);
+
+  useEffect(() => {
+    const fetchThreeDArtOptions = async () => {
+      try {
+        const { data, error } = await insforge.database
+          .from('three_d_art_options')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: true });
+
+        if (data && !error) {
+          setThreeDArtOptions(data);
+        } else {
+          // Fallback to default options if database fetch fails
+          setThreeDArtOptions([
+            { id: '1', name: 'Yes, contains 3d art', description: 'Raised 3D elements and dimensional art', price: 199, is_active: true },
+            { id: '2', name: 'NO, but has beads and charms', description: 'Decorative beads and charm additions', price: 199, is_active: true },
+            { id: '3', name: 'None of the above', description: 'Flat design without 3D elements or decorations', price: 199, is_active: true },
+          ]);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch 3D art options, using defaults:', error);
+        setThreeDArtOptions([
+          { id: '1', name: 'Yes, contains 3d art', description: 'Raised 3D elements and dimensional art', price: 199, is_active: true },
+          { id: '2', name: 'NO, but has beads and charms', description: 'Decorative beads and charm additions', price: 199, is_active: true },
+          { id: '3', name: 'None of the above', description: 'Flat design without 3D elements or decorations', price: 199, is_active: true },
+        ]);
+      }
+    };
+
+    fetchThreeDArtOptions();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +100,13 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
 
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleThreeDArtClick = (optionId: string) => {
+    setSelectedThreeDArt(optionId);
+    if (onThreeDArtSelection) {
+      onThreeDArtSelection(optionId);
+    }
   };
 
   return (
@@ -130,6 +188,65 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
           className="hidden"
         />
       </div>
+
+      {/* 3D Art Selection - Only for Custom Orders */}
+      {!readOnly && (
+        <div className="glass-card-strong rounded-3xl p-6 relative overflow-hidden">
+          {/* Decorative background */}
+          <div className="absolute top-0 right-0 w-16 h-16 rounded-full bg-blush-pink/10 animate-float"></div>
+          <div className="absolute bottom-0 left-0 w-12 h-12 rounded-full bg-rose-gold/10 animate-float" style={{ animationDelay: '1.5s' }}></div>
+
+          <div className="relative z-10">
+            <h3 className="font-serif text-xl font-semibold text-foreground mb-4 text-center">
+              Does ur inspo contain 3d art?
+            </h3>
+
+            {/* 3D Art Options Grid */}
+            <div className="space-y-3">
+              {threeDArtOptions.map((option) => (
+                <button
+                  key={option.id}
+                  onClick={() => handleThreeDArtClick(option.id)}
+                  className={`
+                    w-full p-4 rounded-xl border-2 transition-all duration-300 text-left
+                    ${selectedThreeDArt === option.id
+                      ? 'border-rose-gold bg-rose-gold/10 shadow-lg shadow-rose-gold/30'
+                      : 'border-rose-gold/20 bg-white/30 hover:border-rose-gold/50 hover:bg-white/50'
+                    }
+                  `}
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-foreground">{option.name}</p>
+                      <p className="text-sm text-foreground/70">{option.description}</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="font-bold text-rose-gold">₹{option.price}</span>
+                      {selectedThreeDArt === option.id && (
+                        <div className="w-5 h-5 bg-rose-gold rounded-full flex items-center justify-center flex-shrink-0">
+                          <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Warning Message */}
+            <div className="mt-4 bg-red-50 border border-red-200 rounded-xl p-3">
+              <p className="text-sm text-red-800 font-medium flex items-center gap-2">
+                <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                If a mismatch between ur answer and ur inspo pic is found, ur order will be rejected and u will be refunded
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Design Notes */}
       <div className="glass-card-strong rounded-3xl p-6 relative overflow-hidden">

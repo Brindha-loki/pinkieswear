@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { name: 'Orders', href: '/admin/orders', icon: '📦', exact: true },
   { name: 'Rejected Orders', href: '/admin/rejected-orders', icon: '❌', exact: false },
   { name: 'Reviews', href: '/admin/reviews', icon: '⭐', exact: false },
+  { name: 'Settings', href: '/admin/settings', icon: '⚙️', exact: false },
 ];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

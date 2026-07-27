@@ -108,6 +108,10 @@ const CustomOrderFlow = () => {
     setInspirationImage(image);
   };
 
+  const handleThreeDArtSelection = (selection: string) => {
+    setThreeDArtSelection(selection);
+  };
+
   const handleDesignNotesChange = (notes: string) => {
     setDesignNotes(notes);
   };
@@ -122,10 +126,6 @@ const CustomOrderFlow = () => {
 
   const handleSizingNotes = (notes: string) => {
     setSizingNotes(notes);
-  };
-
-  const handleThreeDArtSelection = (selection: string) => {
-    setThreeDArtSelection(selection);
   };
 
   const calculatePrice = () => {
@@ -162,11 +162,6 @@ const CustomOrderFlow = () => {
       return;
     }
 
-    // 3D Art selection is required only for custom orders
-    if (!isGalleryFlow && !threeDArtSelection) {
-      alert('Please select a 3D art option');
-      return;
-    }
 
     const finalPrice = calculatePrice();
 
@@ -267,8 +262,10 @@ const CustomOrderFlow = () => {
             <InspirationUpload
               onImageUpload={handleInspirationUpload}
               onDesignNotesChange={handleDesignNotesChange}
+              onThreeDArtSelection={handleThreeDArtSelection}
               initialImage={inspirationImage}
               initialNotes={designNotes}
+              initialThreeDArt={threeDArtSelection}
             />
             <div className="flex justify-center gap-4 mt-8">
               <Button
@@ -295,12 +292,9 @@ const CustomOrderFlow = () => {
               onNailPhotoUpload={handleNailPhotoUpload}
               onShapeSelect={handleShapeSelect}
               onNotesSubmit={handleSizingNotes}
-              onThreeDArtSelection={isGalleryFlow ? undefined : handleThreeDArtSelection}
               initialNailPhoto={nailPhoto}
               initialShape={selectedShape}
               initialNotes={sizingNotes}
-              initialThreeDArt={threeDArtSelection}
-              showThreeDArtSection={!isGalleryFlow}
             />
             <div className="bg-rose-gold/10 rounded-xl p-4 mb-6">
               <p className="text-sm text-foreground/80 flex items-center gap-2">
@@ -322,7 +316,7 @@ const CustomOrderFlow = () => {
                 <Button
                   onClick={handleAddToCart}
                   className="min-w-[150px]"
-                  disabled={!nailPhoto || !selectedShape || (!isGalleryFlow && !threeDArtSelection)}
+                  disabled={!nailPhoto || !selectedShape}
                 >
                   Add to Cart
                 </Button>
