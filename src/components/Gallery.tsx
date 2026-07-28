@@ -92,21 +92,13 @@ const Gallery = () => {
                 <p className="text-foreground/70 text-sm mb-4 line-clamp-2">
                   {item.description}
                 </p>
-                <Link
-                  href={{
-                    pathname: '/custom-order',
-                    query: {
-                      galleryItem: item.id,
-                      inspo: imageUrl,
-                    },
-                  }}
-                >
+                <Link href={`/product/${item.id}`}>
                   <Button
                     variant="outline"
                     size="sm"
                     className="w-full"
                   >
-                    Buy This
+                    Details
                   </Button>
                 </Link>
               </CardContent>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import insforge from '@/lib/insforge';
 
 interface SizingUploadProps {
   onNailPhotoUpload: (image: string) => void;
@@ -9,6 +10,13 @@ interface SizingUploadProps {
   initialNailPhoto?: string;
   initialShape?: string;
   initialNotes?: string;
+}
+
+interface NailShape {
+  id: string;
+  name: string;
+  description?: string;
+  is_active: boolean;
 }
 
 const SizingUpload: React.FC<SizingUploadProps> = ({
@@ -22,6 +30,7 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
   const [uploadedNailPhoto, setUploadedNailPhoto] = useState<string | undefined>(initialNailPhoto);
   const [selectedShape, setSelectedShape] = useState<string | undefined>(initialShape);
   const [additionalNotes, setAdditionalNotes] = useState(initialNotes || '');
+  const [nailShapes, setNailShapes] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -36,13 +45,40 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
     setAdditionalNotes(initialNotes || '');
   }, [initialNotes]);
 
-  const nailShapes = [
-    'Long Oval',
-    'Medium Almond',
-    'Medium Coffin',
-    'Medium Square',
-    'Short Almond',
-  ];
+  useEffect(() => {
+    const fetchNailShapes = async () => {
+      try {
+        const { data, error } = await insforge.database
+          .from('nail_sizes')
+          .select('name')
+          .order('name', { ascending: true });
+
+        if (data && !error) {
+          setNailShapes(data.map((item: any) => item.name));
+        } else {
+          // Fallback to default shapes if database fetch fails
+          setNailShapes([
+            'Long Oval',
+            'Medium Almond',
+            'Medium Coffin',
+            'Medium Square',
+            'Short Almond',
+          ]);
+        }
+      } catch (error) {
+        console.warn('Failed to fetch nail shapes from database, using defaults:', error);
+        setNailShapes([
+          'Long Oval',
+          'Medium Almond',
+          'Medium Coffin',
+          'Medium Square',
+          'Short Almond',
+        ]);
+      }
+    };
+
+    fetchNailShapes();
+  }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -144,32 +180,21 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
             Click on your preferred nail shape from the guide below
           </p>
 
-          {/* Interactive Shape Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {/* Interactive Shape Buttons */}
+          <div className="flex flex-wrap gap-3 justify-center">
             {nailShapes.map((shape) => (
               <button
                 key={shape}
                 onClick={() => handleShapeClick(shape)}
                 className={`
-                  relative p-4 rounded-xl border-2 transition-all duration-300 hover:scale-105 active:scale-95
+                  px-6 py-3 rounded-full border-2 font-medium transition-all duration-300 hover:scale-105 active:scale-95
                   ${selectedShape === shape
-                    ? 'border-rose-gold bg-rose-gold/10 shadow-lg shadow-rose-gold/30'
-                    : 'border-rose-gold/20 bg-white/30 hover:border-rose-gold/50 hover:bg-white/50'
+                    ? 'border-rose-gold bg-rose-gold text-white shadow-lg shadow-rose-gold/30'
+                    : 'border-rose-gold/30 bg-white/30 text-foreground hover:border-rose-gold hover:bg-rose-gold/10'
                   }
                 `}
               >
-                <div className="aspect-square rounded-lg bg-gradient-to-br from-baby-pink to-blush-pink mb-3 flex items-center justify-center shadow-sm">
-                  <p className="text-xs font-medium text-foreground text-center leading-tight">
-                    {shape}
-                  </p>
-                </div>
-                {selectedShape === shape && (
-                  <div className="absolute top-2 right-2 w-5 h-5 bg-rose-gold rounded-full flex items-center justify-center shadow-md">
-                    <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-                    </svg>
-                  </div>
-                )}
+                {shape}
               </button>
             ))}
           </div>

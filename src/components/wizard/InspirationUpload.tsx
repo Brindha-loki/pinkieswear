@@ -198,7 +198,7 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
 
           <div className="relative z-10">
             <h3 className="font-serif text-xl font-semibold text-foreground mb-4 text-center">
-              Does ur inspo contain 3d art?
+              Does your inspiration contain 3D art?
             </h3>
 
             {/* 3D Art Options Grid */}
@@ -241,7 +241,7 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
                 <svg className="w-4 h-4 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
-                If a mismatch between ur answer and ur inspo pic is found, ur order will be rejected and u will be refunded
+                If a mismatch between your answer and your inspiration picture is found, your order will be rejected and you will be refunded
               </p>
             </div>
           </div>

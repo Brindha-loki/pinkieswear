@@ -20,6 +20,7 @@ const CustomOrderFlow = () => {
   const { addToCart } = useCart();
   const galleryItemId = searchParams.get('galleryItem');
   const isGalleryFlow = !!galleryItemId;
+  const hasRedirected = React.useRef(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3; // Reduced from 4: Personal Details → Inspiration → Sizing (includes 3D Art)
@@ -49,12 +50,13 @@ const CustomOrderFlow = () => {
 
   // Step names differ based on whether it's a gallery or custom order
   const stepNames = isGalleryFlow
-    ? ['Selected Design', 'Personal Details', 'Sizing']
+    ? ['Inspiration', 'Sizing', 'Details']
     : ['Personal Details', 'Inspiration', 'Sizing'];
 
-  // Authentication guard
+  // Authentication guard - only redirect once to avoid loop on back navigation
   useEffect(() => {
-    if (!user) {
+    if (!user && !hasRedirected.current && typeof window !== 'undefined') {
+      hasRedirected.current = true;
       router.push('/login');
     }
   }, [user, router]);
@@ -188,6 +190,10 @@ const CustomOrderFlow = () => {
     router.push('/cart');
   };
 
+  const handleBack = () => {
+    router.back();
+  };
+
   const renderStep = () => {
     switch (currentStep) {
       case 1:
@@ -226,11 +232,13 @@ const CustomOrderFlow = () => {
         if (isGalleryFlow) {
           return (
             <div className="animate-slide-in">
-              <PersonalDetailsForm
-                onSubmit={handlePersonalDetailsSubmit}
-                initialData={personalDetails}
-                showSubmitButton={false}
-                onDataChange={setTempPersonalDetails}
+              <SizingUpload
+                onNailPhotoUpload={handleNailPhotoUpload}
+                onShapeSelect={handleShapeSelect}
+                onNotesSubmit={handleSizingNotes}
+                initialNailPhoto={nailPhoto}
+                initialShape={selectedShape}
+                initialNotes={sizingNotes}
               />
               <div className="flex justify-center gap-4 mt-8">
                 <Button
@@ -241,14 +249,9 @@ const CustomOrderFlow = () => {
                   ← Previous
                 </Button>
                 <Button
-                  onClick={() => {
-                    if (tempPersonalDetails) {
-                      setPersonalDetails(tempPersonalDetails);
-                      handleNext();
-                    }
-                  }}
+                  onClick={handleNext}
                   className="min-w-[150px]"
-                  disabled={!tempPersonalDetails?.fullName || !tempPersonalDetails?.phone || !tempPersonalDetails?.whatsapp || !tempPersonalDetails?.address}
+                  disabled={!nailPhoto || !selectedShape}
                 >
                   Next →
                 </Button>
@@ -286,6 +289,57 @@ const CustomOrderFlow = () => {
           </div>
         );
       case 3:
+        if (isGalleryFlow) {
+          return (
+            <div className="animate-slide-in">
+              <PersonalDetailsForm
+                onSubmit={handlePersonalDetailsSubmit}
+                initialData={personalDetails}
+                showSubmitButton={false}
+                onDataChange={setTempPersonalDetails}
+              />
+              <div className="bg-rose-gold/10 rounded-xl p-4 mb-6">
+                <p className="text-sm text-foreground/80 flex items-center gap-2">
+                  <svg className="w-5 h-5 text-rose-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Shipping typically takes 10-20 days</span>
+                </p>
+              </div>
+              <div className="flex justify-center gap-4 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  className="min-w-[150px]"
+                >
+                  ← Previous
+                </Button>
+                {!addedToCart ? (
+                  <Button
+                    onClick={() => {
+                      if (tempPersonalDetails) {
+                        setPersonalDetails(tempPersonalDetails);
+                        handleAddToCart();
+                      }
+                    }}
+                    className="min-w-[150px]"
+                    disabled={!tempPersonalDetails?.fullName || !tempPersonalDetails?.phone || !tempPersonalDetails?.whatsapp || !tempPersonalDetails?.address}
+                  >
+                    Add to Cart
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleProceedToCart}
+                    className="min-w-[150px]"
+                  >
+                    Proceed to Cart →
+                  </Button>
+                )}
+              </div>
+            </div>
+          );
+        }
+
         return (
           <div className="animate-slide-in">
             <SizingUpload
@@ -357,6 +411,17 @@ const CustomOrderFlow = () => {
         </div>
 
         <div className="relative z-10 max-w-4xl mx-auto">
+          {/* Back Button */}
+          <button
+            onClick={handleBack}
+            className="mb-6 flex items-center gap-2 text-foreground/70 hover:text-foreground transition-colors group"
+          >
+            <svg className="w-5 h-5 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            <span className="font-medium">Back</span>
+          </button>
+
           <div className="text-center mb-8">
             <h1 className="font-serif text-4xl md:text-5xl font-bold text-foreground mb-4">
               {isGalleryFlow ? 'Gallery Order' : 'Custom Order'} Wizard
