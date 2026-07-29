@@ -11,17 +11,27 @@ import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
+  title: "The PinkieSwear",
+  description: "Luxury Handmade Press-on Nails",
   openGraph: {
+    title: "The PinkieSwear",
+    description: "Luxury Handmade Press-on Nails",
+    type: 'website',
+    url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thepinkieswear.com',
+    siteName: 'The Pinkie Swear',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'The Pinkie Swear - Luxury Handmade Press-on Nails',
+        alt: 'The PinkieSwear',
       },
     ],
   },
   twitter: {
+    card: 'summary_large_image',
+    title: 'The PinkieSwear',
+    description: 'Luxury Handmade Press-on Nails',
     images: ['/og-image.png'],
   },
 };
