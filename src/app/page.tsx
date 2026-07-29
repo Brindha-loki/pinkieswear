@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import Gallery from '@/components/Gallery';
@@ -8,6 +9,22 @@ import About from '@/components/About';
 import Instagram from '@/components/Instagram';
 import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
+
+export const metadata: Metadata = {
+  openGraph: {
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'The Pinkie Swear - Luxury Handmade Press-on Nails',
+      },
+    ],
+  },
+  twitter: {
+    images: ['/og-image.png'],
+  },
+};
 
 export default function Home() {
   return (
