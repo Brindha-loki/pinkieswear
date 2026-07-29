@@ -63,8 +63,8 @@ const Gallery = () => {
           const imageUrl = item.image_url || fallbackImage || '';
 
           return (
-            <Card key={item.id} hover className="group">
-              <div className="aspect-[4/5] sm:aspect-square bg-gradient-to-br from-baby-pink to-blush-pink rounded-2xl mb-2 sm:mb-4 flex items-center justify-center overflow-hidden relative">
+            <Card key={item.id} hover className="group flex flex-col h-full">
+              <div className="aspect-[4/5] sm:aspect-square bg-gradient-to-br from-baby-pink to-blush-pink rounded-2xl mb-2 flex items-center justify-center overflow-hidden relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 {imageUrl ? (
                   <img
@@ -79,29 +79,31 @@ const Gallery = () => {
                   />
                 ) : null}
                 <div className="text-6xl hidden">💅</div>
-                <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium text-rose-gold">
+                <div className="absolute bottom-2 right-2 bg-white/90 backdrop-blur-sm rounded-full px-2 py-1 text-xs sm:text-sm font-medium text-rose-gold">
                   ₹{item.price}
                 </div>
               </div>
-              <CardHeader className="pb-2">
-                <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground mb-1 sm:mb-2">
-                  {item.name}
-                </h3>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <p className="text-foreground/70 text-xs sm:text-sm mb-2 sm:mb-4 line-clamp-2">
-                  {item.description}
-                </p>
-                <Link href={`/product/${item.id}`}>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs sm:text-sm"
-                  >
-                    Details
-                  </Button>
-                </Link>
-              </CardContent>
+              <div className="flex flex-col flex-1 min-h-0">
+                <CardHeader className="pb-1">
+                  <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground leading-tight mb-1">
+                    {item.name}
+                  </h3>
+                </CardHeader>
+                <CardContent className="pt-0 flex flex-col flex-1">
+                  <p className="text-foreground/70 text-xs sm:text-sm leading-tight mb-2 line-clamp-2 flex-1">
+                    {item.description}
+                  </p>
+                  <Link href={`/product/${item.id}`} className="mt-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full text-xs sm:text-sm"
+                    >
+                      Details
+                    </Button>
+                  </Link>
+                </CardContent>
+              </div>
             </Card>
           )
         })}
