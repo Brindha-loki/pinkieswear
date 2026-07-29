@@ -64,7 +64,7 @@ const Gallery = () => {
 
           return (
             <Card key={item.id} hover className="group flex flex-col h-full">
-              <div className="aspect-[4/5] sm:aspect-square bg-gradient-to-br from-baby-pink to-blush-pink rounded-2xl mb-2 flex items-center justify-center overflow-hidden relative flex-shrink-0">
+              <div className="aspect-[4/5] sm:aspect-square bg-gradient-to-br from-baby-pink to-blush-pink rounded-2xl mb-0.5 flex items-center justify-center overflow-hidden relative flex-shrink-0">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 {imageUrl ? (
                   <img
@@ -84,13 +84,13 @@ const Gallery = () => {
                 </div>
               </div>
               <div className="flex flex-col flex-1 min-h-0">
-                <CardHeader className="pb-1">
-                  <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground leading-tight mb-1">
+                <CardHeader className="pb-0 px-3 sm:px-4">
+                  <h3 className="font-serif text-base sm:text-xl font-semibold text-foreground leading-tight mb-0.5 text-left">
                     {item.name}
                   </h3>
                 </CardHeader>
-                <CardContent className="pt-0 flex flex-col flex-1">
-                  <p className="text-foreground/70 text-xs sm:text-sm leading-tight mb-2 line-clamp-2 flex-1">
+                <CardContent className="pt-0 px-3 sm:px-4 flex flex-col flex-1">
+                  <p className="text-foreground/70 text-xs sm:text-sm leading-tight mb-0.5 line-clamp-2 flex-1 text-left">
                     {item.description}
                   </p>
                   <Link href={`/product/${item.id}`} className="mt-auto">
