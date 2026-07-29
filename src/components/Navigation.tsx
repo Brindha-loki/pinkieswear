@@ -6,7 +6,7 @@ import { useAuth } from '../lib/AuthContext';
 import { useCart } from '../lib/CartContext';
 
 const Navigation = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const { cartCount } = useCart();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -113,6 +113,15 @@ const Navigation = () => {
                           📱 {user.phone}
                         </div>
                         <div className="border-t border-rose-gold/10 my-2"></div>
+                        {isAdmin && (
+                          <Link
+                            href="/admin"
+                            className="block px-3 py-2 text-sm text-rose-gold hover:bg-rose-gold/10 rounded-lg transition-colors font-medium"
+                            onClick={() => setIsProfileDropdownOpen(false)}
+                          >
+                            ⚙️ Admin Mode
+                          </Link>
+                        )}
                         <Link
                           href="/my-orders"
                           className="block px-3 py-2 text-sm text-foreground hover:bg-rose-gold/10 rounded-lg transition-colors"
@@ -206,6 +215,15 @@ const Navigation = () => {
               )}
               {user ? (
                 <>
+                  {isAdmin && (
+                    <Link
+                      href="/admin"
+                      className="flex items-center gap-2 py-3 px-4 text-rose-gold font-medium hover:text-rose-gold transition-colors duration-300"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      ⚙️ Admin Mode
+                    </Link>
+                  )}
                   <Link
                     href="/my-orders"
                     className="flex items-center gap-2 py-3 px-4 text-foreground hover:text-rose-gold transition-colors duration-300"
