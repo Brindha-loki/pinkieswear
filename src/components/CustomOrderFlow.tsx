@@ -20,7 +20,6 @@ const CustomOrderFlow = () => {
   const { addToCart } = useCart();
   const galleryItemId = searchParams.get('galleryItem');
   const isGalleryFlow = !!galleryItemId;
-  const hasRedirected = React.useRef(false);
 
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 3; // Reduced from 4: Personal Details → Inspiration → Sizing (includes 3D Art)
@@ -53,11 +52,10 @@ const CustomOrderFlow = () => {
     ? ['Inspiration', 'Sizing', 'Details']
     : ['Personal Details', 'Inspiration', 'Sizing'];
 
-  // Authentication guard - only redirect once to avoid loop on back navigation
+  // Authentication guard - redirect to login with return URL (use replace to allow back navigation)
   useEffect(() => {
-    if (!user && !hasRedirected.current && typeof window !== 'undefined') {
-      hasRedirected.current = true;
-      router.push('/login');
+    if (!user && typeof window !== 'undefined') {
+      router.replace('/login?redirect=/');
     }
   }, [user, router]);
 

@@ -70,7 +70,6 @@ const About = () => {
           <p className="text-foreground/80 leading-relaxed max-w-2xl mx-auto mb-6">
             Whether you're here for your first custom set or you're a returning member of our community, we're so glad you've chosen The Pinkie Swear. You're not just a customer – you're part of our family of nail art lovers.
           </p>
-          <Button size="lg">Start Your Journey</Button>
         </div>
       </div>
     </Section>
