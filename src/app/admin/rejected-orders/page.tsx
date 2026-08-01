@@ -81,6 +81,35 @@ export default function RejectedOrdersPage() {
     }
   };
 
+  const handleDelete = async (order: AdminOrder) => {
+    if (!confirm(`Permanently delete order ${order.order_number}? This action cannot be undone.`)) return;
+    setActionLoading(order.id);
+    try {
+      // Delete payment details first
+      const { error: paymentError } = await insforge.database
+        .from('payment_details')
+        .delete()
+        .eq('order_id', order.id);
+
+      if (paymentError) throw paymentError;
+
+      // Delete the order
+      const { error: orderError } = await insforge.database
+        .from('orders')
+        .delete()
+        .eq('id', order.id);
+
+      if (orderError) throw orderError;
+
+      fetchOrders();
+    } catch (err) {
+      console.error('[RejectedOrders] delete error:', err);
+      alert('Failed to delete order.');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -105,6 +134,7 @@ export default function RejectedOrdersPage() {
           onViewDetails={setSelectedOrder}
           onAccept={handleAccept}
           onToggleRefund={handleToggleRefund}
+          onDelete={handleDelete}
           actionLoading={actionLoading}
         />
       )}

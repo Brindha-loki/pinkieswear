@@ -10,6 +10,7 @@ interface Product {
   description?: string;
   price: number;
   image_url?: string;
+  image_urls?: string[];
   category?: string;
   is_active: boolean;
   created_at: string;
@@ -43,8 +44,8 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formData, setFormData] = useState(EMPTY_FORM);
-  const [imagePreview, setImagePreview] = useState<string>('');
-  const [imageFile, setImageFile] = useState<string>('');
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageFiles, setImageFiles] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -69,29 +70,47 @@ export default function AdminProductsPage() {
   const openAdd = () => {
     setEditingProduct(null);
     setFormData(EMPTY_FORM);
-    setImagePreview('');
-    setImageFile('');
+    setImagePreviews([]);
+    setImageFiles([]);
     setShowForm(true);
   };
 
   const openEdit = (p: Product) => {
     setEditingProduct(p);
     setFormData({ name: p.name, description: p.description || '', price: p.price.toString(), category: p.category || '', is_active: p.is_active });
-    setImagePreview(p.image_url || '');
-    setImageFile('');
+    // Parse image URLs - handle both single string and array
+    if (p.image_urls && p.image_urls.length > 0) {
+      setImagePreviews(p.image_urls);
+    } else if (p.image_url) {
+      setImagePreviews([p.image_url]);
+    } else {
+      setImagePreviews([]);
+    }
+    setImageFiles([]);
     setShowForm(true);
   };
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      setImageFile(result);
-      setImagePreview(result);
-    };
-    reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (!files || imagePreviews.length >= 3) return;
+    
+    const remainingSlots = 3 - imagePreviews.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    
+    filesToProcess.forEach(file => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setImagePreviews(prev => [...prev, result]);
+        setImageFiles(prev => [...prev, result]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -99,17 +118,29 @@ export default function AdminProductsPage() {
     if (!formData.name || !formData.price) return;
     setSaving(true);
     try {
-      let finalImageUrl = editingProduct?.image_url || '';
+      let finalImageUrls: string[] = [];
 
-      if (imageFile) {
-        finalImageUrl = await uploadProductImage(imageFile, formData.name);
+      if (imageFiles.length > 0) {
+        // Upload new images
+        for (const imageFile of imageFiles) {
+          const url = await uploadProductImage(imageFile, formData.name);
+          finalImageUrls.push(url);
+        }
+      } else if (editingProduct) {
+        // Keep existing images
+        if (editingProduct.image_urls && editingProduct.image_urls.length > 0) {
+          finalImageUrls = editingProduct.image_urls;
+        } else if (editingProduct.image_url) {
+          finalImageUrls = [editingProduct.image_url];
+        }
       }
 
       const payload = {
         name: formData.name,
         description: formData.description || null,
         price: parseFloat(formData.price),
-        image_url: finalImageUrl || null,
+        image_url: finalImageUrls.length > 0 ? finalImageUrls[0] : null, // Keep for backward compatibility
+        image_urls: finalImageUrls.length > 0 ? finalImageUrls : null,
         category: formData.category || null,
         is_active: formData.is_active,
       };
@@ -238,28 +269,37 @@ export default function AdminProductsPage() {
 
             {/* Image Upload */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1">Product Image</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Product Images (up to 3)</label>
               <div
                 className="border-2 border-dashed border-rose-gold/30 rounded-xl p-5 text-center hover:border-rose-gold/60 transition-colors cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => imagePreviews.length < 3 && fileInputRef.current?.click()}
               >
-                {imagePreview ? (
-                  <div className="relative inline-block">
-                    <img src={imagePreview} alt="Preview" className="w-40 h-40 object-contain rounded-xl mx-auto" />
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); setImagePreview(''); setImageFile(''); }}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold"
-                    >?</button>
+                {imagePreviews.length > 0 ? (
+                  <div className="grid grid-cols-3 gap-3">
+                    {imagePreviews.map((preview, index) => (
+                      <div key={index} className="relative inline-block">
+                        <img src={preview} alt={`Preview ${index + 1}`} className="w-24 h-24 object-contain rounded-lg mx-auto" />
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); handleRemoveImage(index); }}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold"
+                        >×</button>
+                      </div>
+                    ))}
+                    {imagePreviews.length < 3 && (
+                      <div className="w-24 h-24 border-2 border-dashed border-rose-gold/30 rounded-lg flex items-center justify-center">
+                        <span className="text-rose-gold/50 text-xs">+ Add</span>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <>
-                    <div className="text-4xl mb-2">???</div>
-                    <p className="text-sm text-foreground/60">Click to upload product image</p>
-                    <p className="text-xs text-foreground/40 mt-1">JPG, PNG, WebP supported</p>
+                    <div className="text-4xl mb-2">📷</div>
+                    <p className="text-sm text-foreground/60">Click to upload product images</p>
+                    <p className="text-xs text-foreground/40 mt-1">Up to 3 images (JPG, PNG, WebP)</p>
                   </>
                 )}
-                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageSelect} className="hidden" />
+                <input ref={fileInputRef} type="file" accept="image/*" multiple onChange={handleImageSelect} className="hidden" />
               </div>
             </div>
 
@@ -297,10 +337,19 @@ export default function AdminProductsPage() {
             <div key={product.id} className="glass-card rounded-2xl overflow-hidden group">
               {/* Image */}
               <div className="relative aspect-square bg-gradient-to-br from-baby-pink to-blush-pink">
-                {product.image_url ? (
+                {product.image_urls && product.image_urls.length > 0 ? (
+                  <div className="relative w-full h-full">
+                    <img src={product.image_urls[0]} alt={product.name} className="w-full h-full object-cover" />
+                    {product.image_urls.length > 1 && (
+                      <div className="absolute bottom-1 right-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                        +{product.image_urls.length - 1}
+                      </div>
+                    )}
+                  </div>
+                ) : product.image_url ? (
                   <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center text-4xl">??</div>
+                  <div className="w-full h-full flex items-center justify-center text-4xl">🎨</div>
                 )}
                 <div className={`absolute top-2 right-2 px-2 py-0.5 rounded-full text-xs font-medium ${product.is_active ? 'bg-green-500 text-white' : 'bg-gray-400 text-white'}`}>
                   {product.is_active ? 'Live' : 'Hidden'}

@@ -22,7 +22,7 @@ const CustomOrderFlow = () => {
   const isGalleryFlow = !!galleryItemId;
 
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 3; // Reduced from 4: Personal Details → Inspiration → Sizing (includes 3D Art)
+  const totalSteps = 3; // Custom: Inspiration → Sizing → Details, Gallery: Inspiration → Sizing → Details
   const [addedToCart, setAddedToCart] = useState(false);
 
   const [personalDetails, setPersonalDetails] = useState<PersonalDetailsData | undefined>();
@@ -35,22 +35,21 @@ const CustomOrderFlow = () => {
   });
   const [designNotes, setDesignNotes] = useState<string>('');
   const [threeDArtSelection, setThreeDArtSelection] = useState<string | undefined>();
-  const [nailPhoto, setNailPhoto] = useState<string | undefined>();
+  const [threeDArtPrice, setThreeDArtPrice] = useState<number>(0);
+  const [nailPhotos, setNailPhotos] = useState<string[]>([]);
   const [selectedShape, setSelectedShape] = useState<string | undefined>();
   const [sizingNotes, setSizingNotes] = useState<string>('');
-  const [galleryItem, setGalleryItem] = useState<{ name: string; price: number; image: string } | undefined>(() => {
+  const [galleryItem, setGalleryItem] = useState<{ id: string; name: string; price: number; image: string } | undefined>(() => {
     if (galleryItemId) {
       const item = galleryItems.find((item) => item.id === galleryItemId);
-      return item ? { name: item.name, price: item.price, image: item.image } : undefined;
+      return item ? { id: item.id, name: item.name, price: item.price, image: item.image } : undefined;
     }
     return undefined;
   });
   const [tempPersonalDetails, setTempPersonalDetails] = useState<PersonalDetailsData | undefined>();
 
-  // Step names differ based on whether it's a gallery or custom order
-  const stepNames = isGalleryFlow
-    ? ['Inspiration', 'Sizing', 'Details']
-    : ['Personal Details', 'Inspiration', 'Sizing'];
+  // Step names for both flows: Inspiration → Sizing → Details
+  const stepNames = ['Inspiration', 'Sizing', 'Details'];
 
   // Authentication guard - redirect to login with return URL (use replace to allow back navigation)
   useEffect(() => {
@@ -70,7 +69,7 @@ const CustomOrderFlow = () => {
             .single();
 
           if (data && !error) {
-            setGalleryItem({ name: data.name, price: data.price, image: data.image_url });
+            setGalleryItem({ id: data.id, name: data.name, price: data.price, image: data.image_url });
             // Only update inspirationImage if not already set from URL param
             if (!searchParams.get('inspo')) {
               setInspirationImage(data.image_url);
@@ -108,16 +107,17 @@ const CustomOrderFlow = () => {
     setInspirationImage(image);
   };
 
-  const handleThreeDArtSelection = (selection: string) => {
+  const handleThreeDArtSelection = (selection: string, price: number) => {
     setThreeDArtSelection(selection);
+    setThreeDArtPrice(price);
   };
 
   const handleDesignNotesChange = (notes: string) => {
     setDesignNotes(notes);
   };
 
-  const handleNailPhotoUpload = (image: string) => {
-    setNailPhoto(image);
+  const handleNailPhotoUpload = (images: string[]) => {
+    setNailPhotos(images);
   };
 
   const handleShapeSelect = (shape: string) => {
@@ -129,9 +129,9 @@ const CustomOrderFlow = () => {
   };
 
   const calculatePrice = () => {
-    // For custom orders: 249 with 3D art, 199 otherwise
+    // For custom orders: use 3D art price if selected, otherwise base price
     if (!isGalleryFlow) {
-      return threeDArtSelection === '3d-art' ? 249 : 199;
+      return threeDArtPrice > 0 ? threeDArtPrice : 199;
     }
     // For gallery orders: use the gallery product price
     return galleryItem?.price || 199;
@@ -172,11 +172,12 @@ const CustomOrderFlow = () => {
       image: galleryItem?.image || inspirationImage || '',
       shippingAddress: personalDetails.address,
       inspirationImage: inspirationImage,
-      nailSizeImage: nailPhoto,
+      nailSizeImages: nailPhotos,
       designNotes: designNotes,
       nailShape: selectedShape,
       sizingNotes: sizingNotes,
       threeDArtSelection: threeDArtSelection,
+      galleryProductId: galleryItem?.id || undefined,
     };
 
     console.log('[CustomOrderFlow] Adding to cart:', cartItem);
@@ -195,69 +196,7 @@ const CustomOrderFlow = () => {
   const renderStep = () => {
     switch (currentStep) {
       case 1:
-        if (isGalleryFlow) {
-          return (
-            <div className="animate-slide-in">
-              <InspirationUpload
-                onImageUpload={handleInspirationUpload}
-                onDesignNotesChange={handleDesignNotesChange}
-                initialImage={inspirationImage}
-                initialNotes={designNotes}
-                readOnly={true}
-                galleryItem={galleryItem}
-              />
-              <div className="flex justify-center gap-4 mt-8">
-                <Button
-                  onClick={handleNext}
-                  className="min-w-[150px]"
-                >
-                  Next →
-                </Button>
-              </div>
-            </div>
-          );
-        }
-
-        return (
-          <div className="animate-slide-in">
-            <PersonalDetailsForm
-              onSubmit={handlePersonalDetailsSubmit}
-              initialData={personalDetails}
-            />
-          </div>
-        );
-      case 2:
-        if (isGalleryFlow) {
-          return (
-            <div className="animate-slide-in">
-              <SizingUpload
-                onNailPhotoUpload={handleNailPhotoUpload}
-                onShapeSelect={handleShapeSelect}
-                onNotesSubmit={handleSizingNotes}
-                initialNailPhoto={nailPhoto}
-                initialShape={selectedShape}
-                initialNotes={sizingNotes}
-              />
-              <div className="flex justify-center gap-4 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  className="min-w-[150px]"
-                >
-                  ← Previous
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  className="min-w-[150px]"
-                  disabled={!nailPhoto || !selectedShape}
-                >
-                  Next →
-                </Button>
-              </div>
-            </div>
-          );
-        }
-
+        // Inspiration step for both flows
         return (
           <div className="animate-slide-in">
             <InspirationUpload
@@ -267,6 +206,31 @@ const CustomOrderFlow = () => {
               initialImage={inspirationImage}
               initialNotes={designNotes}
               initialThreeDArt={threeDArtSelection}
+              readOnly={isGalleryFlow}
+              galleryItem={galleryItem}
+            />
+            <div className="flex justify-center gap-4 mt-8">
+              <Button
+                onClick={handleNext}
+                className="min-w-[150px]"
+                disabled={!inspirationImage}
+              >
+                Next →
+              </Button>
+            </div>
+          </div>
+        );
+      case 2:
+        // Sizing step for both flows
+        return (
+          <div className="animate-slide-in">
+            <SizingUpload
+              onNailPhotoUpload={handleNailPhotoUpload}
+              onShapeSelect={handleShapeSelect}
+              onNotesSubmit={handleSizingNotes}
+              initialNailPhoto={nailPhotos[0]}
+              initialShape={selectedShape}
+              initialNotes={sizingNotes}
             />
             <div className="flex justify-center gap-4 mt-8">
               <Button
@@ -279,7 +243,7 @@ const CustomOrderFlow = () => {
               <Button
                 onClick={handleNext}
                 className="min-w-[150px]"
-                disabled={!inspirationImage}
+                disabled={nailPhotos.length === 0 || !selectedShape}
               >
                 Next →
               </Button>
@@ -287,66 +251,14 @@ const CustomOrderFlow = () => {
           </div>
         );
       case 3:
-        if (isGalleryFlow) {
-          return (
-            <div className="animate-slide-in">
-              <PersonalDetailsForm
-                onSubmit={handlePersonalDetailsSubmit}
-                initialData={personalDetails}
-                showSubmitButton={false}
-                onDataChange={setTempPersonalDetails}
-              />
-              <div className="bg-rose-gold/10 rounded-xl p-4 mb-6">
-                <p className="text-sm text-foreground/80 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-rose-gold" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span>Shipping typically takes 10-20 days</span>
-                </p>
-              </div>
-              <div className="flex justify-center gap-4 mt-8">
-                <Button
-                  variant="outline"
-                  onClick={handlePrevious}
-                  className="min-w-[150px]"
-                >
-                  ← Previous
-                </Button>
-                {!addedToCart ? (
-                  <Button
-                    onClick={() => {
-                      if (tempPersonalDetails) {
-                        setPersonalDetails(tempPersonalDetails);
-                        handleAddToCart();
-                      }
-                    }}
-                    className="min-w-[150px]"
-                    disabled={!tempPersonalDetails?.fullName || !tempPersonalDetails?.phone || !tempPersonalDetails?.whatsapp || !tempPersonalDetails?.address}
-                  >
-                    Add to Cart
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleProceedToCart}
-                    className="min-w-[150px]"
-                  >
-                    Proceed to Cart →
-                  </Button>
-                )}
-              </div>
-            </div>
-          );
-        }
-
+        // Details step for both flows
         return (
           <div className="animate-slide-in">
-            <SizingUpload
-              onNailPhotoUpload={handleNailPhotoUpload}
-              onShapeSelect={handleShapeSelect}
-              onNotesSubmit={handleSizingNotes}
-              initialNailPhoto={nailPhoto}
-              initialShape={selectedShape}
-              initialNotes={sizingNotes}
+            <PersonalDetailsForm
+              onSubmit={handlePersonalDetailsSubmit}
+              initialData={personalDetails}
+              showSubmitButton={false}
+              onDataChange={setTempPersonalDetails}
             />
             <div className="bg-rose-gold/10 rounded-xl p-4 mb-6">
               <p className="text-sm text-foreground/80 flex items-center gap-2">
@@ -366,9 +278,14 @@ const CustomOrderFlow = () => {
               </Button>
               {!addedToCart ? (
                 <Button
-                  onClick={handleAddToCart}
+                  onClick={() => {
+                    if (tempPersonalDetails) {
+                      setPersonalDetails(tempPersonalDetails);
+                      handleAddToCart();
+                    }
+                  }}
                   className="min-w-[150px]"
-                  disabled={!nailPhoto || !selectedShape}
+                  disabled={!tempPersonalDetails?.fullName || !tempPersonalDetails?.phone || !tempPersonalDetails?.whatsapp || !tempPersonalDetails?.address}
                 >
                   Add to Cart
                 </Button>

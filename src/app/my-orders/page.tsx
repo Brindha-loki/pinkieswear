@@ -207,8 +207,24 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onCancel, canCancel, isCan
   // Use direct image URLs (new architecture) with fallback to order_images table (legacy)
   const inspirationImage = order.inspiration_image_url ||
     order.order_images.find(img => img.image_type === 'inspiration')?.image_url;
-  const nailPhoto = order.nail_size_image_url ||
-    order.order_images.find(img => img.image_type === 'nail_photo')?.image_url;
+  
+  // Parse nail size images - handle JSON array or single URL
+  const nailSizeImages = React.useMemo(() => {
+    if (order.nail_size_image_url) {
+      try {
+        const parsed = JSON.parse(order.nail_size_image_url);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        // If not JSON, treat as single image
+        return [order.nail_size_image_url];
+      }
+    }
+    // Fallback to order_images table
+    const legacyImage = order.order_images.find(img => img.image_type === 'nail_photo')?.image_url;
+    return legacyImage ? [legacyImage] : [];
+  }, [order.nail_size_image_url, order.order_images]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -228,9 +244,14 @@ const OrderCard: React.FC<OrderCardProps> = ({ order, onCancel, canCancel, isCan
               <img src={inspirationImage} alt="Inspiration" className="w-full h-full object-cover" />
             </div>
           )}
-          {nailPhoto && (
-            <div className="w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-baby-pink to-blush-pink flex-shrink-0">
-              <img src={nailPhoto} alt="Nail Photo" className="w-full h-full object-cover" />
+          {nailSizeImages.length > 0 && (
+            <div className="w-24 h-24 rounded-xl overflow-hidden bg-gradient-to-br from-baby-pink to-blush-pink flex-shrink-0 relative">
+              <img src={nailSizeImages[0]} alt="Nail Size" className="w-full h-full object-cover" />
+              {nailSizeImages.length > 1 && (
+                <div className="absolute bottom-1 right-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                  +{nailSizeImages.length - 1}
+                </div>
+              )}
             </div>
           )}
         </div>

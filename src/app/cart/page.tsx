@@ -60,16 +60,32 @@ export default function CartPage() {
                   key={item.id}
                   className="glass-card rounded-2xl p-6 flex gap-6 items-center"
                 >
-                  <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-baby-pink to-blush-pink">
-                    {item.image ? (
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl">
-                        💅
+                  <div className="flex gap-3">
+                    <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-baby-pink to-blush-pink">
+                      {item.image ? (
+                        <img
+                          src={item.image}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-4xl">
+                          💅
+                        </div>
+                      )}
+                    </div>
+                    {item.nailSizeImages && item.nailSizeImages.length > 0 && (
+                      <div className="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-gradient-to-br from-baby-pink to-blush-pink relative">
+                        <img
+                          src={item.nailSizeImages[0]}
+                          alt="Nail Size"
+                          className="w-full h-full object-cover"
+                        />
+                        {item.nailSizeImages.length > 1 && (
+                          <div className="absolute bottom-1 right-1 bg-black/50 text-white text-xs px-1.5 py-0.5 rounded">
+                            +{item.nailSizeImages.length - 1}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

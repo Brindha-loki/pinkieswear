@@ -47,6 +47,23 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
   const payment = order.payment_details?.[0];
   const isGallery = !!order.gallery_product_id;
 
+  // Parse nail size images - handle both single string and array
+  const nailSizeImages = React.useMemo(() => {
+    if (order.nail_size_image_url) {
+      // Try to parse as JSON array first
+      try {
+        const parsed = JSON.parse(order.nail_size_image_url);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      } catch (e) {
+        // If not JSON, treat as single image
+        return [order.nail_size_image_url];
+      }
+    }
+    return [];
+  }, [order.nail_size_image_url]);
+
   const canRefund =
     payment?.payment_method === 'razorpay' ||
     payment?.upi_transaction_id ||
@@ -86,14 +103,22 @@ export const OrderDetailModal: React.FC<OrderDetailModalProps> = ({ order, onClo
               />
               <span className="text-xs text-foreground/50">Inspiration</span>
             </div>
-            <div className="flex flex-col items-center gap-1">
-              <ImagePreview
-                src={order.nail_size_image_url || ''}
-                alt="Nail Size"
-                thumbClassName="w-20 h-20"
-              />
-              <span className="text-xs text-foreground/50">Nail Size</span>
-            </div>
+            {/* Nail Size Images */}
+            {nailSizeImages.length > 0 && (
+              <div className="flex flex-col items-center gap-1">
+                <div className="flex gap-1">
+                  {nailSizeImages.map((imageUrl, index) => (
+                    <ImagePreview
+                      key={index}
+                      src={imageUrl}
+                      alt={`Nail Size ${index + 1}`}
+                      thumbClassName="w-20 h-20"
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-foreground/50">Nail Size</span>
+              </div>
+            )}
           </div>
 
           {/* Order Info */}

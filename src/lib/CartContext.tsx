@@ -10,12 +10,13 @@ export interface CartItem {
   image: string;
   shippingAddress?: string;
   inspirationImage?: string;
-  nailSizeImage?: string;
+  nailSizeImages?: string[];
   designNotes?: string;
   nailShape?: string;
   sizingNotes?: string;
   threeDArtSelection?: string;
   orderId?: string;
+  galleryProductId?: string;
 }
 
 export const DELIVERY_CHARGE = 70;

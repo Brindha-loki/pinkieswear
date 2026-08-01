@@ -102,6 +102,12 @@ const Footer = () => {
                   thepinkieswear.in
                 </a>
               </li>
+              <li className="text-foreground/70 text-sm">
+                <span className="text-foreground/50">Office Address: </span>
+                <span className="text-foreground/70">
+                  No.110, AGS Layout, New BEL Ward, Dasarahalli Main Road, Sanjayanagara, Bangalore-560094
+                </span>
+              </li>
             </ul>
           </div>
         </div>

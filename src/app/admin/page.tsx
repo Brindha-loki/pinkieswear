@@ -6,9 +6,9 @@ import insforge from '@/lib/insforge';
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
     totalOrders: 0,
-    pendingOrders: 0,
-    totalRevenue: 0,
-    activeProducts: 0,
+    rejectedOrders: 0,
+    galleryProducts: 0,
+    users: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -18,25 +18,34 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
-      // Fetch order stats
+      // Fetch total orders (excluding rejected/cancelled)
       const { data: ordersData } = await insforge.database
         .from('orders')
-        .select('total_amount, status, payment_status');
+        .select('id')
+        .neq('status', 'Cancelled');
 
+      // Fetch rejected orders (status = 'Cancelled')
+      const { data: rejectedData } = await insforge.database
+        .from('orders')
+        .select('id')
+        .eq('status', 'Cancelled');
+
+      // Fetch gallery products
       const { data: productsData } = await insforge.database
         .from('gallery_products')
-        .select('is_active');
+        .select('id');
 
-      if (ordersData) {
-        const paidOrders = ordersData.filter((order) => order.payment_status === 'verified');
+      // Fetch users
+      const { data: usersData } = await insforge.database
+        .from('customers')
+        .select('id');
 
-        setStats({
-          totalOrders: ordersData.length,
-          pendingOrders: ordersData.filter((order) => order.status === 'Order Placed' || order.status === 'Payment Verified').length,
-          totalRevenue: paidOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0),
-          activeProducts: productsData?.filter(p => p.is_active).length || 0,
-        });
-      }
+      setStats({
+        totalOrders: ordersData?.length || 0,
+        rejectedOrders: rejectedData?.length || 0,
+        galleryProducts: productsData?.length || 0,
+        users: usersData?.length || 0,
+      });
     } catch (error) {
       console.error('Error fetching stats:', error);
     } finally {
@@ -67,23 +76,11 @@ export default function AdminDashboard() {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Pending Orders</p>
-                <p className="text-3xl font-bold text-rose-gold">{stats.pendingOrders}</p>
+                <p className="text-sm text-foreground/60 mb-1">Rejected Orders</p>
+                <p className="text-3xl font-bold text-red-600">{stats.rejectedOrders}</p>
               </div>
-              <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center text-2xl">
-                ⏳
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-card rounded-2xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground/60 mb-1">Total Revenue</p>
-                <p className="text-3xl font-bold text-green-600">₹{stats.totalRevenue}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-2xl">
-                💰
+              <div className="w-12 h-12 rounded-full bg-red-500/20 flex items-center justify-center text-2xl">
+                ❌
               </div>
             </div>
           </div>
@@ -91,11 +88,23 @@ export default function AdminDashboard() {
           <div className="glass-card rounded-2xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground/60 mb-1">Active Products</p>
-                <p className="text-3xl font-bold text-foreground">{stats.activeProducts}</p>
+                <p className="text-sm text-foreground/60 mb-1">Gallery Products</p>
+                <p className="text-3xl font-bold text-purple-600">{stats.galleryProducts}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-2xl">
-                💅
+                �
+              </div>
+            </div>
+          </div>
+
+          <div className="glass-card rounded-2xl p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-foreground/60 mb-1">Users</p>
+                <p className="text-3xl font-bold text-blue-600">{stats.users}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-2xl">
+                �
               </div>
             </div>
           </div>

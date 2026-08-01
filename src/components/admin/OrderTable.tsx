@@ -53,6 +53,7 @@ interface OrderTableProps {
   onAccept?: (order: AdminOrder) => void;
   onUpdateStatus?: (order: AdminOrder, newStatus: string) => void;
   onToggleRefund?: (order: AdminOrder) => void;
+  onDelete?: (order: AdminOrder) => void;
   actionLoading?: string | null;
 }
 
@@ -97,6 +98,7 @@ export const OrderTable: React.FC<OrderTableProps> = ({
   onAccept,
   onUpdateStatus,
   onToggleRefund,
+  onDelete,
   actionLoading,
 }) => {
   const [rejecting, setRejecting] = useState<string | null>(null);
@@ -126,9 +128,7 @@ export const OrderTable: React.FC<OrderTableProps> = ({
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Customer</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Type</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Inspo Image</th>
-              <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Nail Size</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Amount</th>
-              <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Payment</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Status</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Date</th>
               <th className="px-4 py-3 text-left font-semibold text-foreground whitespace-nowrap">Actions</th>
@@ -160,22 +160,8 @@ export const OrderTable: React.FC<OrderTableProps> = ({
                     thumbClassName="w-12 h-12"
                   />
                 </td>
-                <td className="px-4 py-3">
-                  <ImagePreview
-                    src={order.nail_size_image_url || ''}
-                    alt="Nail Size"
-                    thumbClassName="w-12 h-12"
-                  />
-                </td>
                 <td className="px-4 py-3 font-semibold text-foreground whitespace-nowrap">
                   ₹{order.total_amount}
-                </td>
-                <td className="px-4 py-3">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    PAYMENT_COLORS[order.payment_status] || 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {PAYMENT_LABELS[order.payment_status] || order.payment_status}
-                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-2">
@@ -258,6 +244,15 @@ export const OrderTable: React.FC<OrderTableProps> = ({
                         }`}
                       >
                         {actionLoading === order.id ? 'Updating...' : order.payment_details?.[0]?.refund_status === 'completed' ? 'Refund Done' : 'Refund Pending'}
+                      </button>
+                    )}
+                    {mode === 'rejected' && onDelete && (
+                      <button
+                        onClick={() => onDelete(order)}
+                        disabled={actionLoading === order.id}
+                        className="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-medium rounded-lg transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {actionLoading === order.id ? 'Deleting...' : 'Delete'}
                       </button>
                     )}
                   </div>

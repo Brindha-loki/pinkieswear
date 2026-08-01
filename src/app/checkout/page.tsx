@@ -78,10 +78,10 @@ export default function CheckoutPage() {
         const nailShapeId = await resolveNailShapeId(item.nailShape);
         const orderPayload = {
           customer_id: customerData.id,
-          gallery_product_id: null,
+          gallery_product_id: item.galleryProductId || null,
           status: 'Order Placed',
           payment_status: 'pending',
-          total_amount: item.price,
+          total_amount: cartTotal, // Use cart total (item price + delivery charge)
           shipping_address: item.shippingAddress || customerData.full_name || '',
           design_notes: item.designNotes || null,
           nail_shape_id: nailShapeId,
@@ -125,21 +125,24 @@ export default function CheckoutPage() {
           }
         }
 
-        // Upload nail photo (nail size image) if exists
-        // Note: item.image might be from gallery product, so check if it's a data URL (uploaded)
-        // For checkout from cart items that came from custom order flow, the nail photo would be in the item
-        if (item.nailSizeImage || (item.image && item.image.startsWith('data:'))) {
+        // Upload nail size images if exists (handle multiple images)
+        if (item.nailSizeImages && item.nailSizeImages.length > 0) {
           try {
-            const photoToUpload = item.nailSizeImage || item.image;
-            const imageUrl = await uploadImageToStorage(
-              photoToUpload,
-              orderNumber,
-              'nail-size-images'
-            );
-            updatePayload.nail_size_image_url = imageUrl;
-            console.log('[Checkout] Nail size image uploaded:', { orderNumber, url: imageUrl });
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < item.nailSizeImages.length; i++) {
+              const imageUrl = await uploadImageToStorage(
+                item.nailSizeImages[i],
+                orderNumber,
+                'nail-size-images',
+                i // Pass image index for unique filename
+              );
+              uploadedUrls.push(imageUrl);
+            }
+            // Store as JSON array
+            updatePayload.nail_size_image_url = JSON.stringify(uploadedUrls);
+            console.log('[Checkout] Nail size images uploaded:', { orderNumber, count: uploadedUrls.length, urls: uploadedUrls });
           } catch (uploadError) {
-            console.warn('[Checkout] Nail size image upload error:', uploadError);
+            console.warn('[Checkout] Nail size images upload error:', uploadError);
           }
         }
 
@@ -167,7 +170,7 @@ export default function CheckoutPage() {
             payment_gateway_id: paymentId,
             gateway_order_id: orderId,
             payment_method: 'razorpay',
-            amount_paid: item.price,
+            amount_paid: cartTotal, // Use cart total (item price + delivery charge)
             payment_date: new Date().toISOString(),
             refund_status: 'none',
           });
@@ -237,7 +240,7 @@ export default function CheckoutPage() {
         const nailShapeId = await resolveNailShapeId(item.nailShape);
         const orderPayload = {
           customer_id: customerData.id,
-          gallery_product_id: null,
+          gallery_product_id: item.galleryProductId || null,
           status: 'Order Placed',
           payment_status: 'pending',
           total_amount: totalAmount,
@@ -284,19 +287,24 @@ export default function CheckoutPage() {
           }
         }
 
-        // Upload nail photo (nail size image) if exists
-        if (item.nailSizeImage || (item.image && item.image.startsWith('data:'))) {
+        // Upload nail size images if exists (handle multiple images)
+        if (item.nailSizeImages && item.nailSizeImages.length > 0) {
           try {
-            const photoToUpload = item.nailSizeImage || item.image;
-            const imageUrl = await uploadImageToStorage(
-              photoToUpload,
-              orderNumber,
-              'nail-size-images'
-            );
-            updatePayload.nail_size_image_url = imageUrl;
-            console.log('[Checkout] Nail size image uploaded:', { orderNumber, url: imageUrl });
+            const uploadedUrls: string[] = [];
+            for (let i = 0; i < item.nailSizeImages.length; i++) {
+              const imageUrl = await uploadImageToStorage(
+                item.nailSizeImages[i],
+                orderNumber,
+                'nail-size-images',
+                i // Pass image index for unique filename
+              );
+              uploadedUrls.push(imageUrl);
+            }
+            // Store as JSON array
+            updatePayload.nail_size_image_url = JSON.stringify(uploadedUrls);
+            console.log('[Checkout] UPI Nail size images uploaded:', { orderNumber, count: uploadedUrls.length, urls: uploadedUrls });
           } catch (uploadError) {
-            console.warn('[Checkout] Nail size image upload error:', uploadError);
+            console.warn('[Checkout] UPI Nail size images upload error:', uploadError);
           }
         }
 

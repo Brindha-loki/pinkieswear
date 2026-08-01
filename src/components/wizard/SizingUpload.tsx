@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import insforge from '@/lib/insforge';
 
 interface SizingUploadProps {
-  onNailPhotoUpload: (image: string) => void;
+  onNailPhotoUpload: (images: string[]) => void;
   onShapeSelect: (shape: string) => void;
   onNotesSubmit: (notes: string) => void;
   initialNailPhoto?: string;
@@ -27,14 +27,14 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
   initialShape,
   initialNotes,
 }) => {
-  const [uploadedNailPhoto, setUploadedNailPhoto] = useState<string | undefined>(initialNailPhoto);
+  const [uploadedNailPhotos, setUploadedNailPhotos] = useState<string[]>(initialNailPhoto ? [initialNailPhoto] : []);
   const [selectedShape, setSelectedShape] = useState<string | undefined>(initialShape);
   const [additionalNotes, setAdditionalNotes] = useState(initialNotes || '');
   const [nailShapes, setNailShapes] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setUploadedNailPhoto(initialNailPhoto);
+    setUploadedNailPhotos(initialNailPhoto ? [initialNailPhoto] : []);
   }, [initialNailPhoto]);
 
   useEffect(() => {
@@ -81,20 +81,39 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
   }, []);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setUploadedNailPhoto(result);
-        onNailPhotoUpload(result);
-      };
-      reader.readAsDataURL(file);
+    const files = e.target.files;
+    if (files && uploadedNailPhotos.length < 4) {
+      const remainingSlots = 4 - uploadedNailPhotos.length;
+      const filesToProcess = Array.from(files).slice(0, remainingSlots);
+      
+      filesToProcess.forEach(file => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const result = reader.result as string;
+          setUploadedNailPhotos(prev => {
+            const newPhotos = [...prev, result];
+            return newPhotos;
+          });
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
+  // Call parent callback when uploadedNailPhotos changes
+  useEffect(() => {
+    onNailPhotoUpload(uploadedNailPhotos);
+  }, [uploadedNailPhotos, onNailPhotoUpload]);
+
   const handleUploadClick = () => {
     fileInputRef.current?.click();
+  };
+
+  const handleRemovePhoto = (index: number) => {
+    setUploadedNailPhotos(prev => {
+      const newPhotos = prev.filter((_, i) => i !== index);
+      return newPhotos;
+    });
   };
 
   const handleShapeClick = (shape: string) => {
@@ -124,23 +143,57 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
 
         <div className="relative z-10">
           <h3 className="font-serif text-xl font-semibold text-foreground mb-4">
-            Upload Your Nail Photo
+            Upload Your Nail Photos
           </h3>
-          {uploadedNailPhoto ? (
-            <div className="relative">
-              <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-baby-pink to-blush-pink flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <img
-                  src={uploadedNailPhoto}
-                  alt="Nail sizing photo"
-                  className="w-full h-full object-cover"
-                />
+          
+          {/* Instruction Box */}
+          <div className="bg-rose-gold/10 rounded-xl p-4 mb-4">
+            <p className="text-sm text-foreground/80 mb-3">
+              Upload upto 4 images of your natural nails for size reference, use any Indian coin for reference, example:
+            </p>
+            <div className="flex gap-3 justify-center">
+              <img 
+                src="/size-guide-1.jpg" 
+                alt="Size guide example 1" 
+                className="w-24 h-24 object-cover rounded-lg border border-rose-gold/20"
+              />
+              <img 
+                src="/size-guide-2.jpg" 
+                alt="Size guide example 2" 
+                className="w-24 h-24 object-cover rounded-lg border border-rose-gold/20"
+              />
+            </div>
+          </div>
+
+          {uploadedNailPhotos.length > 0 ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                {uploadedNailPhotos.map((photo, index) => (
+                  <div key={index} className="relative">
+                    <div className="aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-baby-pink to-blush-pink flex items-center justify-center shadow-lg">
+                      <img
+                        src={photo}
+                        alt={`Nail sizing photo ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      onClick={() => handleRemovePhoto(index)}
+                      className="absolute top-2 right-2 w-8 h-8 bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors shadow-lg"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
-              <button
-                onClick={handleUploadClick}
-                className="mt-4 text-sm text-foreground/70 hover:text-rose-gold transition-colors font-medium"
-              >
-                Change Photo
-              </button>
+              {uploadedNailPhotos.length < 4 && (
+                <button
+                  onClick={handleUploadClick}
+                  className="w-full py-3 border-2 border-dashed border-rose-gold/30 rounded-xl text-foreground/70 hover:border-rose-gold hover:bg-white/30 transition-all duration-300 font-medium"
+                >
+                  Add More Photos ({4 - uploadedNailPhotos.length} remaining)
+                </button>
+              )}
             </div>
           ) : (
             <div
@@ -152,14 +205,15 @@ const SizingUpload: React.FC<SizingUploadProps> = ({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
               </div>
-              <p className="text-foreground font-medium mb-2">Click to Upload Nail Photo</p>
-              <p className="text-foreground/60 text-sm">Clear photo of your natural nails</p>
+              <p className="text-foreground font-medium mb-2">Click to Upload Nail Photos</p>
+              <p className="text-foreground/60 text-sm">Upload upto 4 photos of your natural nails</p>
             </div>
           )}
           <input
             ref={fileInputRef}
             type="file"
             accept="image/*"
+            multiple
             onChange={handleFileChange}
             className="hidden"
           />

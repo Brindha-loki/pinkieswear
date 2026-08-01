@@ -6,7 +6,7 @@ import insforge from '@/lib/insforge';
 interface InspirationUploadProps {
   onImageUpload: (image: string) => void;
   onDesignNotesChange?: (notes: string) => void;
-  onThreeDArtSelection?: (selection: string) => void;
+  onThreeDArtSelection?: (selection: string, price: number) => void;
   initialImage?: string;
   initialNotes?: string;
   initialThreeDArt?: string;
@@ -65,20 +65,10 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
         if (data && !error) {
           setThreeDArtOptions(data);
         } else {
-          // Fallback to default options if database fetch fails
-          setThreeDArtOptions([
-            { id: '1', name: 'Yes, contains 3d art', description: 'Raised 3D elements and dimensional art', price: 199, is_active: true },
-            { id: '2', name: 'NO, but has beads and charms', description: 'Decorative beads and charm additions', price: 199, is_active: true },
-            { id: '3', name: 'None of the above', description: 'Flat design without 3D elements or decorations', price: 199, is_active: true },
-          ]);
+          console.error('Failed to fetch 3D art options:', error);
         }
       } catch (error) {
-        console.warn('Failed to fetch 3D art options, using defaults:', error);
-        setThreeDArtOptions([
-          { id: '1', name: 'Yes, contains 3d art', description: 'Raised 3D elements and dimensional art', price: 199, is_active: true },
-          { id: '2', name: 'NO, but has beads and charms', description: 'Decorative beads and charm additions', price: 199, is_active: true },
-          { id: '3', name: 'None of the above', description: 'Flat design without 3D elements or decorations', price: 199, is_active: true },
-        ]);
+        console.error('Error fetching 3D art options:', error);
       }
     };
 
@@ -105,7 +95,8 @@ const InspirationUpload: React.FC<InspirationUploadProps> = ({
   const handleThreeDArtClick = (optionId: string) => {
     setSelectedThreeDArt(optionId);
     if (onThreeDArtSelection) {
-      onThreeDArtSelection(optionId);
+      const selectedOption = threeDArtOptions.find(opt => opt.id === optionId);
+      onThreeDArtSelection(optionId, selectedOption?.price || 0);
     }
   };
 

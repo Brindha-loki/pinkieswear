@@ -31,19 +31,23 @@ export async function urlToBlob(url: string): Promise<Blob> {
  * @param dataUrl - Base64 data URL of the image
  * @param orderNumber - Order number (e.g., TPS-000001)
  * @param bucketName - Storage bucket name ('inspiration-images' or 'nail-size-images')
+ * @param imageIndex - Optional index for multiple images (e.g., 0, 1, 2, 3)
  * @returns URL of the uploaded image
  */
 export async function uploadImageToStorage(
   dataUrl: string,
   orderNumber: string,
-  bucketName: 'inspiration-images' | 'nail-size-images'
+  bucketName: 'inspiration-images' | 'nail-size-images',
+  imageIndex?: number
 ): Promise<string> {
   try {
     // Convert data URL to Blob
     const blob = dataUrlToBlob(dataUrl);
 
-    // Generate filename: orderNumber.jpg
-    const fileName = `${orderNumber}.jpg`;
+    // Generate filename: orderNumber.jpg or orderNumber-1.jpg, orderNumber-2.jpg, etc.
+    const fileName = imageIndex !== undefined 
+      ? `${orderNumber}-${imageIndex}.jpg`
+      : `${orderNumber}.jpg`;
 
     // Upload to InsForge Storage
     const { data, error } = await insforge.storage
