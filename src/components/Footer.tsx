@@ -72,6 +72,11 @@ const Footer = () => {
                   Return &amp; Refund Policy
                 </a>
               </li>
+              <li>
+                <a href="/tandc.html" className="text-foreground/70 hover:text-rose-gold transition-colors text-sm">
+                  Terms &amp; Conditions
+                </a>
+              </li>
             </ul>
           </div>
 
