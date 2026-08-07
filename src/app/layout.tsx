@@ -17,9 +17,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The PinkieSwear",
-  description: "Luxury Handmade Press-on Nails",
-  keywords: ["press-on nails", "custom nails", "handmade nails", "luxury nails", "nail art", "custom press-ons", "nail designs"],
+  title: "The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art",
+  description: "Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.",
+  keywords: ["press-on nails", "custom nails", "handmade nails", "luxury nails", "nail art", "custom press-ons", "nail designs", "reusable nails", "press on nail sets"],
   authors: [{ name: "The Pinkie Swear" }],
   creator: "The Pinkie Swear",
   publisher: "The Pinkie Swear",
@@ -33,12 +33,12 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thepinkieswear.com',
-    title: 'The PinkieSwear',
-    description: 'Luxury Handmade Press-on Nails',
+    title: 'The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art',
+    description: 'Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.',
     siteName: 'The Pinkie Swear',
     images: [
       {
-        url: '/og-image.png',
+        url: process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png` : 'https://thepinkieswear.com/og-image.png',
         width: 1200,
         height: 630,
         alt: 'The Pinkie Swear - Luxury Handmade Press-on Nails',
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The PinkieSwear',
-    description: 'Luxury Handmade Press-on Nails',
-    images: ['/og-image.png'],
+    title: 'The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art',
+    description: 'Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.',
+    images: [process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png` : 'https://thepinkieswear.com/og-image.png'],
   },
   icons: {
     icon: [

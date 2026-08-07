@@ -11,28 +11,28 @@ import FAQ from '@/components/FAQ';
 import Footer from '@/components/Footer';
 
 export const metadata: Metadata = {
-  title: "The PinkieSwear",
-  description: "Luxury Handmade Press-on Nails",
+  title: "The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art",
+  description: "Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.",
   openGraph: {
-    title: "The PinkieSwear",
-    description: "Luxury Handmade Press-on Nails",
+    title: "The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art",
+    description: "Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.",
     type: 'website',
     url: process.env.NEXT_PUBLIC_SITE_URL || 'https://thepinkieswear.com',
     siteName: 'The Pinkie Swear',
     images: [
       {
-        url: '/og-image.png',
+        url: process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png` : 'https://thepinkieswear.com/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'The PinkieSwear',
+        alt: 'The Pinkie Swear - Luxury Handmade Press-on Nails',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'The PinkieSwear',
-    description: 'Luxury Handmade Press-on Nails',
-    images: ['/og-image.png'],
+    title: 'The PinkieSwear - Luxury Handmade Press-on Nails & Custom Nail Art',
+    description: 'Discover premium handmade press-on nails at The PinkieSwear. Custom nail designs, luxury press-ons, and artisan nail art crafted with care for salon-quality results at home.',
+    images: [process.env.NEXT_PUBLIC_SITE_URL ? `${process.env.NEXT_PUBLIC_SITE_URL}/og-image.png` : 'https://thepinkieswear.com/og-image.png'],
   },
 };
 
